@@ -5,6 +5,8 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import os
+from tqdm import tqdm
 
 
 # =====================================================================
@@ -15,7 +17,15 @@ TEST_CSV  = r"C:\Users\vishn\Documents\Number_Recognition\data\mnist_test.csv"
 
 
 # =====================================================================
-# 2. DATASET CLASS (LOADS MNIST CSV)
+# 2. OUTPUT FOLDER SETUP
+# =====================================================================
+OUTPUT_DIR = "result/cnn_model/images"
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+# =====================================================================
+# 3. DATASET CLASS
 # =====================================================================
 class MNISTDataset(Dataset):
     def __init__(self, csv_path):
@@ -34,7 +44,7 @@ class MNISTDataset(Dataset):
 
 
 # =====================================================================
-# 3. LOAD DATA
+# 4. LOAD DATA
 # =====================================================================
 train_dataset = MNISTDataset(TRAIN_CSV)
 test_dataset  = MNISTDataset(TEST_CSV)
@@ -44,26 +54,28 @@ test_loader  = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
 
 # =====================================================================
-# 4. CNN MODEL (POWERFUL + HIGH ACCURACY)
+# 5. CNN MODEL DEFINITION
 # =====================================================================
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
 
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.Conv2d(1, 32, 3, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(32),
 
-            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.Conv2d(32, 64, 3, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(64),
+
             nn.MaxPool2d(2, 2),
             nn.Dropout(0.25),
 
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.Conv2d(64, 128, 3, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(128),
+
             nn.MaxPool2d(2, 2),
             nn.Dropout(0.25)
         )
@@ -78,12 +90,11 @@ class CNN(nn.Module):
     def forward(self, x):
         x = self.conv_layers(x)
         x = x.reshape(x.size(0), -1)
-        out = self.fc_layers(x)
-        return out
+        return self.fc_layers(x)
 
 
 # =====================================================================
-# 5. TRAINING SETUP
+# 6. TRAINING SETUP
 # =====================================================================
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CNN().to(device)
@@ -94,24 +105,26 @@ optimizer = optim.Adam(model.parameters(), lr=0.001)
 num_epochs = 10
 
 loss_history = []
-acc_history = []
+accuracy_history = []
 
 
 # =====================================================================
-# 6. TRAINING LOOP
+# 7. TRAINING LOOP WITH PROGRESS BAR
 # =====================================================================
 print("\nTraining started...\n")
-total_start = time.time()
+training_start = time.time()
 
 for epoch in range(num_epochs):
-    start = time.time()
-    model.train()
+    epoch_start = time.time()
 
-    total_loss = 0
+    model.train()
+    epoch_loss = 0
     correct = 0
     total = 0
 
-    for images, labels in train_loader:
+    progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
+
+    for images, labels in progress_bar:
         images, labels = images.to(device), labels.to(device)
 
         optimizer.zero_grad()
@@ -120,47 +133,50 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        total_loss += loss.item()
+        epoch_loss += loss.item()
         _, predicted = torch.max(outputs.data, 1)
+
         total += labels.size(0)
         correct += (predicted == labels).sum().item()
 
-    epoch_loss = total_loss / len(train_loader)
-    epoch_acc = 100 * correct / total
+        progress_bar.set_postfix(loss=loss.item())
 
-    loss_history.append(epoch_loss)
-    acc_history.append(epoch_acc)
+    avg_loss = epoch_loss / len(train_loader)
+    accuracy = 100 * correct / total
 
-    print(f"Epoch {epoch+1}/{num_epochs} | "
-          f"Loss: {epoch_loss:.4f} | "
-          f"Accuracy: {epoch_acc:.2f}% | "
-          f"Time: {time.time() - start:.2f}s")
+    loss_history.append(avg_loss)
+    accuracy_history.append(accuracy)
 
-print(f"\nTotal Training Time: {time.time() - total_start:.2f}s")
+    print(f"Epoch {epoch+1}: Loss={avg_loss:.4f}  Accuracy={accuracy:.2f}%  Time={time.time()-epoch_start:.2f}s")
+
+print(f"\nTotal Training Time: {time.time() - training_start:.2f}s")
 
 
 # =====================================================================
-# 7. PLOT TRAINING CURVES
+# 8. SAVE TRAINING CURVE IMAGES
 # =====================================================================
-plt.figure(figsize=(12, 5))
+plt.figure(figsize=(12,5))
 
-plt.subplot(1, 2, 1)
-plt.plot(loss_history, label="Loss")
+plt.subplot(1,2,1)
+plt.plot(loss_history)
 plt.title("Training Loss")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 
-plt.subplot(1, 2, 2)
-plt.plot(acc_history, label="Accuracy")
-plt.title("Training Accuracy")
+plt.subplot(1,2,2)
+plt.plot(accuracy_history)
+plt.title("Training Accuracy (%)")
 plt.xlabel("Epoch")
-plt.ylabel("Accuracy (%)")
+plt.ylabel("Accuracy")
 
+plt.savefig(os.path.join(OUTPUT_DIR, "training_curve.png"))
 plt.show()
+
+print(f"Training curve saved at: {OUTPUT_DIR}/training_curve.png")
 
 
 # =====================================================================
-# 8. TESTING ACCURACY
+# 9. TEST ACCURACY
 # =====================================================================
 model.eval()
 correct = 0
@@ -176,11 +192,12 @@ with torch.no_grad():
         correct += (predicted == labels).sum().item()
 
 test_acc = 100 * correct / total
-print(f"\nFinal Test Accuracy: {test_acc:.2f}%")
+
+print(f"\nFinal Test Accuracy: {test_acc:.2f}%\n")
 
 
 # =====================================================================
-# 9. SAMPLE PREDICTION
+# 10. SAVE A SAMPLE PREDICTION IMAGE
 # =====================================================================
 sample_img, sample_label = test_dataset[0]
 sample_img_gpu = sample_img.unsqueeze(0).to(device)
@@ -189,8 +206,9 @@ with torch.no_grad():
     output = model(sample_img_gpu)
     _, pred = torch.max(output, 1)
 
-print(f"\nSample Image Prediction: {pred.item()} (Actual: {sample_label})")
-
 plt.imshow(sample_img.squeeze(), cmap='gray')
-plt.title(f"Predicted: {pred.item()}")
+plt.title(f"Predicted: {pred.item()} | Actual: {sample_label}")
+plt.savefig(os.path.join(OUTPUT_DIR, "sample_prediction.png"))
 plt.show()
+
+print(f"Sample prediction saved at: {OUTPUT_DIR}/sample_prediction.png")
