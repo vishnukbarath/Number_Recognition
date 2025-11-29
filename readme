@@ -1,0 +1,120 @@
+# Number Recognition Project
+
+This project implements and compares **multiple machine learning and deep learning models** for handwritten digit recognition using the **MNIST dataset**.  
+The goal is to evaluate the performance of different architectures and visualize their predictions, accuracy, and losses.
+
+---
+
+## 📝 Models Implemented
+
+### 1. CNN (Basic Convolutional Neural Network)
+- **Architecture:** 3 convolutional layers, max pooling, dropout, fully connected layers.
+- **Accuracy:** ~98%
+- **Strengths:** Simple, fast, baseline CNN.
+
+**Visuals:**
+
+![CNN Training Curve](result/cnn_model/images/training_curve.png)  
+![CNN Sample Prediction](result/cnn_model/images/sample_prediction.png)  
+![CNN Confusion Matrix](result/evaluation/CNN_confusion_matrix.png)
+
+---
+
+### 2. MLP (Multilayer Perceptron / Fully Connected Network)
+- **Architecture:** 4 fully connected layers with dropout and ReLU activation.
+- **Accuracy:** ~97%
+- **Strengths:** Simple fully connected network, no convolutional layers.
+
+**Visuals:**
+
+![MLP Sample Prediction](result/evaluation/MLP_sample_0.png)  
+![MLP Confusion Matrix](result/evaluation/MLP_confusion_matrix.png)
+
+---
+
+### 3. Advanced CNN
+- **Architecture:** 4 convolutional layers, batch normalization, dropout, max pooling, 3 fully connected layers.
+- **Accuracy:** ~99%
+- **Strengths:** Deeper network, better regularization, highest performance among CNN models.
+
+**Visuals:**
+
+![Advanced CNN Training Curve](result/advanced_cnn/images/training_curve.png)  
+![Advanced CNN Sample Prediction](result/advanced_cnn/images/sample_prediction.png)  
+![Advanced CNN Confusion Matrix](result/evaluation/Advanced_CNN_confusion_matrix.png)
+
+---
+
+### 4. ResNet18 (Transfer Learning)
+- **Architecture:** Pretrained ResNet18 (ImageNet) with final layer modified for 10 classes. Input resized to 224×224.
+- **Accuracy:** ~99%
+- **Strengths:** Uses transfer learning, robust feature extraction, high performance on small datasets.
+
+**Visuals:**
+
+![ResNet18 Sample Prediction](result/resnet/images/sample_prediction.png)  
+![ResNet18 Confusion Matrix](result/evaluation/ResNet18_confusion_matrix.png)
+
+---
+
+## 📊 Evaluation and Comparison
+
+**Accuracy Comparison**
+
+![Accuracy Comparison](result/evaluation/accuracy_comparison.png)
+
+**Average Test Loss Comparison**
+
+![Loss Comparison](result/evaluation/loss_comparison.png)
+
+**Summary Metrics (from evaluation_summary.txt):**
+
+CNN: Accuracy ~98%, Avg Loss ~0.06
+MLP: Accuracy ~97%, Avg Loss ~0.09
+Advanced CNN: Accuracy ~99%, Avg Loss ~0.03
+ResNet18: Accuracy ~99%, Avg Loss ~0.02
+
+yaml
+Copy code
+
+---
+
+## ⚡ Key Differences Between Models
+
+| Model          | Type              | Accuracy | Complexity | Key Feature                           |
+|----------------|-----------------|----------|------------|---------------------------------------|
+| MLP            | Fully Connected  | 97%      | Low        | Simple, no convolution                |
+| CNN            | Convolutional    | 98%      | Medium     | Baseline CNN                          |
+| Advanced CNN   | Convolutional    | 99%      | High       | BatchNorm, Dropout, deeper layers    |
+| ResNet18       | Transfer Learning | 99%     | High       | Pretrained features, robust          |
+
+- **MLP:** Quick to train, limited feature extraction.  
+- **CNN:** Learns spatial features, good for image recognition.  
+- **Advanced CNN:** Handles overfitting better, deeper features, highest accuracy.  
+- **ResNet18:** Leverages transfer learning, robust and fast convergence.
+
+---
+
+## 📂 How to Run
+
+1. Train any model:
+
+```bash
+python Train_Code/cnn_model.py
+python Train_Code/mlp_model.py
+python Train_Code/advanced_cnn_model.py
+python Train_Code/resnet_mnist.py
+Evaluate all models:
+
+bash
+Copy code
+python evaluate_all_models_visual.py
+All results, metrics, plots, and sample predictions will be saved in the respective result/ folders.
+
+📚 References
+MNIST dataset: Kaggle MNIST
+
+PyTorch Documentation: https://pytorch.org/docs/stable/index.html
+
+Transfer Learning in PyTorch: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
+
