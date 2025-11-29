@@ -13,9 +13,38 @@ The goal is to evaluate the performance of different architectures and visualize
 - **Strengths:** Simple, fast, baseline CNN.
 
 **Visuals:**
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![CNN Training Curve](result/cnn_model/images/training_curve.png)  
-![CNN Sample Prediction](result/cnn_model/images/sample_prediction.png)  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+![CNN Sample Prediction](result/cnn_model/images/sample_prediction.png) 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br> 
 ![CNN Confusion Matrix](result/evaluation/CNN_confusion_matrix.png)
 
 ---
@@ -26,8 +55,27 @@ The goal is to evaluate the performance of different architectures and visualize
 - **Strengths:** Simple fully connected network, no convolutional layers.
 
 **Visuals:**
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![MLP Sample Prediction](result/evaluation/MLP_sample_0.png)  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![MLP Confusion Matrix](result/evaluation/MLP_confusion_matrix.png)
 
 ---
@@ -38,9 +86,38 @@ The goal is to evaluate the performance of different architectures and visualize
 - **Strengths:** Deeper network, better regularization, highest performance among CNN models.
 
 **Visuals:**
-
-![Advanced CNN Training Curve](result/advanced_cnn/images/training_curve.png)  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+![Advanced CNN Training Curve](result/advanced_cnn/images/training_curve.png) 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br> 
 ![Advanced CNN Sample Prediction](result/advanced_cnn/images/sample_prediction.png)  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![Advanced CNN Confusion Matrix](result/evaluation/Advanced_CNN_confusion_matrix.png)
 
 ---
@@ -51,8 +128,27 @@ The goal is to evaluate the performance of different architectures and visualize
 - **Strengths:** Uses transfer learning, robust feature extraction, high performance on small datasets.
 
 **Visuals:**
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![ResNet18 Sample Prediction](result/resnet/images/sample_prediction.png)  
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![ResNet18 Confusion Matrix](result/evaluation/ResNet18_confusion_matrix.png)
 
 ---
@@ -60,11 +156,29 @@ The goal is to evaluate the performance of different architectures and visualize
 ## 📊 Evaluation and Comparison
 
 **Accuracy Comparison**
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![Accuracy Comparison](result/evaluation/accuracy_comparison.png)
 
 **Average Test Loss Comparison**
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 ![Loss Comparison](result/evaluation/loss_comparison.png)
 
 **Summary Metrics (from evaluation_summary.txt):**
