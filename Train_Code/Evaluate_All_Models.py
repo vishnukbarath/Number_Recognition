@@ -7,6 +7,7 @@ import os
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import torchvision.transforms as transforms
 import torchvision.models as models
+import numpy as np
 
 # =====================================================================
 # 1. DATASET PATHS
@@ -23,12 +24,11 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # =====================================================================
 # 3. DATASET CLASSES
 # =====================================================================
-# CNN / Advanced CNN Dataset (28x28, 1 channel)
 class MNISTDataset(Dataset):
     def __init__(self, csv_path):
         df = pd.read_csv(csv_path)
         self.labels = df.iloc[:,0].values
-        images = df.iloc[:,1:].values.reshape(-1,1,28,28) / 255.0
+        images = df.iloc[:,1:].values.reshape(-1,1,28,28)/255.0
         self.images = torch.tensor(images, dtype=torch.float32)
         self.labels = torch.tensor(self.labels, dtype=torch.long)
     def __len__(self):
@@ -36,7 +36,6 @@ class MNISTDataset(Dataset):
     def __getitem__(self, idx):
         return self.images[idx], self.labels[idx]
 
-# ResNet Dataset (224x224)
 class MNISTResNetDataset(Dataset):
     def __init__(self, csv_path):
         df = pd.read_csv(csv_path)
@@ -57,19 +56,13 @@ class MNISTResNetDataset(Dataset):
 # =====================================================================
 # 4. LOAD TEST DATA
 # =====================================================================
-test_dataset_cnn = MNISTDataset(TEST_CSV)
-test_loader_cnn = DataLoader(test_dataset_cnn, batch_size=BATCH_SIZE, shuffle=False)
-
-test_dataset_mlp = MNISTDataset(TEST_CSV)  # MLP uses flattened
-test_loader_mlp = DataLoader(test_dataset_mlp, batch_size=BATCH_SIZE, shuffle=False)
-
-test_dataset_resnet = MNISTResNetDataset(TEST_CSV)
-test_loader_resnet = DataLoader(test_dataset_resnet, batch_size=BATCH_SIZE, shuffle=False)
+test_loader_cnn = DataLoader(MNISTDataset(TEST_CSV), batch_size=BATCH_SIZE, shuffle=False)
+test_loader_mlp = DataLoader(MNISTDataset(TEST_CSV), batch_size=BATCH_SIZE, shuffle=False)
+test_loader_resnet = DataLoader(MNISTResNetDataset(TEST_CSV), batch_size=BATCH_SIZE, shuffle=False)
 
 # =====================================================================
-# 5. DEFINE MODEL CLASSES
+# 5. MODEL CLASSES
 # =====================================================================
-# CNN
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
@@ -89,7 +82,6 @@ class CNN(nn.Module):
         x = x.view(x.size(0), -1)
         return self.fc_layers(x)
 
-# Advanced CNN
 class AdvancedCNN(nn.Module):
     def __init__(self):
         super(AdvancedCNN, self).__init__()
@@ -111,7 +103,6 @@ class AdvancedCNN(nn.Module):
         x = x.view(x.size(0),-1)
         return self.fc(x)
 
-# MLP
 class MLP(nn.Module):
     def __init__(self):
         super(MLP,self).__init__()
@@ -125,7 +116,6 @@ class MLP(nn.Module):
         x = x.view(x.size(0),-1)
         return self.fc_layers(x)
 
-# ResNet18
 def get_resnet():
     model = models.resnet18(weights="IMAGENET1K_V1")
     model.conv1 = nn.Conv2d(1,64,kernel_size=7,stride=2,padding=3,bias=False)
@@ -133,7 +123,7 @@ def get_resnet():
     return model
 
 # =====================================================================
-# 6. HELPER FUNCTION FOR TESTING
+# 6. EVALUATION FUNCTION
 # =====================================================================
 def evaluate_model(model, test_loader, device, model_name):
     model.eval()
@@ -142,11 +132,17 @@ def evaluate_model(model, test_loader, device, model_name):
     total = 0
     all_labels = []
     all_preds = []
+    losses = []
+
+    criterion = nn.CrossEntropyLoss()
 
     with torch.no_grad():
         for images, labels in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
+            loss = criterion(outputs, labels)
+            losses.append(loss.item())
+
             _, preds = torch.max(outputs.data,1)
             total += labels.size(0)
             correct += (preds == labels).sum().item()
@@ -154,7 +150,7 @@ def evaluate_model(model, test_loader, device, model_name):
             all_preds.extend(preds.cpu().numpy())
 
     acc = 100*correct/total
-    print(f"{model_name} Test Accuracy: {acc:.2f}%")
+    avg_loss = np.mean(losses)
 
     # Confusion Matrix
     cm = confusion_matrix(all_labels, all_preds)
@@ -164,7 +160,7 @@ def evaluate_model(model, test_loader, device, model_name):
     plt.savefig(os.path.join(OUTPUT_DIR,f"{model_name}_confusion_matrix.png"))
     plt.close()
 
-    # Save a few example predictions
+    # Sample predictions
     for i in range(5):
         img = test_loader.dataset[i][0]
         label = test_loader.dataset[i][1]
@@ -174,14 +170,17 @@ def evaluate_model(model, test_loader, device, model_name):
         plt.savefig(os.path.join(OUTPUT_DIR,f"{model_name}_sample_{i}.png"))
         plt.close()
 
-    return acc
+    # Per-class accuracy
+    class_acc = cm.diagonal()/cm.sum(axis=1)*100
+
+    return acc, avg_loss, class_acc
 
 # =====================================================================
 # 7. MAIN TEST LOOP
 # =====================================================================
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load all models
+# Load models
 cnn_model = CNN()
 cnn_model.load_state_dict(torch.load("result/cnn_model/cnn_model.pth", map_location=device))
 
@@ -195,30 +194,60 @@ resnet_model = get_resnet()
 resnet_model.load_state_dict(torch.load("result/resnet/resnet_mnist.pth", map_location=device))
 
 # Evaluate
+results = {}
 print("\nEvaluating CNN...")
-cnn_acc = evaluate_model(cnn_model, test_loader_cnn, device, "CNN")
+results["CNN"] = evaluate_model(cnn_model, test_loader_cnn, device, "CNN")
 
 print("\nEvaluating Advanced CNN...")
-adv_cnn_acc = evaluate_model(adv_cnn_model, test_loader_cnn, device, "Advanced_CNN")
+results["Advanced CNN"] = evaluate_model(adv_cnn_model, test_loader_cnn, device, "Advanced_CNN")
 
 print("\nEvaluating MLP...")
-mlp_acc = evaluate_model(mlp_model, test_loader_mlp, device, "MLP")
+results["MLP"] = evaluate_model(mlp_model, test_loader_mlp, device, "MLP")
 
 print("\nEvaluating ResNet18...")
-resnet_acc = evaluate_model(resnet_model, test_loader_resnet, device, "ResNet18")
+results["ResNet18"] = evaluate_model(resnet_model, test_loader_resnet, device, "ResNet18")
 
 # =====================================================================
-# 8. SUMMARY
+# 8. PLOT ACCURACY BAR GRAPH
 # =====================================================================
-summary_text = f"""
-Model Evaluation Summary:
+model_names = list(results.keys())
+accuracies = [results[m][0] for m in model_names]
+avg_losses = [results[m][1] for m in model_names]
 
-CNN Accuracy: {cnn_acc:.2f}%
-Advanced CNN Accuracy: {adv_cnn_acc:.2f}%
-MLP Accuracy: {mlp_acc:.2f}%
-ResNet18 Accuracy: {resnet_acc:.2f}%
-"""
+plt.figure(figsize=(10,5))
+bars = plt.bar(model_names, accuracies, color='skyblue')
+plt.ylabel("Accuracy (%)")
+plt.title("Model Accuracy Comparison")
+plt.ylim(0,100)
+for bar, acc in zip(bars, accuracies):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height()-5, f"{acc:.2f}%", ha='center', color='black', fontweight='bold')
+plt.savefig(os.path.join(OUTPUT_DIR,"accuracy_comparison.png"))
+plt.show()
 
-print(summary_text)
-with open(os.path.join(OUTPUT_DIR,"evaluation_summary.txt"), "w") as f:
+# =====================================================================
+# 9. PLOT AVERAGE LOSS BAR GRAPH
+# =====================================================================
+plt.figure(figsize=(10,5))
+bars = plt.bar(model_names, avg_losses, color='salmon')
+plt.ylabel("Average Test Loss")
+plt.title("Model Average Loss Comparison")
+for bar, loss in zip(bars, avg_losses):
+    plt.text(bar.get_x() + bar.get_width()/2, bar.get_height()+0.01, f"{loss:.4f}", ha='center', color='black', fontweight='bold')
+plt.savefig(os.path.join(OUTPUT_DIR,"loss_comparison.png"))
+plt.show()
+
+# =====================================================================
+# 10. SAVE SUMMARY TXT
+# =====================================================================
+summary_text = "Model Evaluation Summary\n\n"
+for m in model_names:
+    acc, avg_loss, class_acc = results[m]
+    summary_text += f"{m}:\n"
+    summary_text += f"   Test Accuracy: {acc:.2f}%\n"
+    summary_text += f"   Average Loss: {avg_loss:.4f}\n"
+    summary_text += f"   Per-class Accuracy: {class_acc}\n\n"
+
+with open(os.path.join(OUTPUT_DIR,"evaluation_summary.txt"),"w") as f:
     f.write(summary_text)
+
+print("\nAll evaluation results saved in:", OUTPUT_DIR)

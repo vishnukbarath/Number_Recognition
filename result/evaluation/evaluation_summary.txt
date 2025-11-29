@@ -1,0 +1,7 @@
+
+Model Evaluation Summary:
+
+CNN Accuracy: 99.38%
+Advanced CNN Accuracy: 99.29%
+MLP Accuracy: 98.07%
+ResNet18 Accuracy: 99.15%
