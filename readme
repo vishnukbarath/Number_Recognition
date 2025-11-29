@@ -95,3 +95,51 @@ The goal is to evaluate the performance of different architectures and visualize
 
 **Summary Metrics (from evaluation_summary.txt):**
 
+CNN: Accuracy ~98%, Avg Loss ~0.06
+MLP: Accuracy ~97%, Avg Loss ~0.09
+Advanced CNN: Accuracy ~99%, Avg Loss ~0.03
+ResNet18: Accuracy ~99%, Avg Loss ~0.02
+
+yaml
+Copy code
+
+---
+
+## ⚡ Key Differences Between Models
+
+| Model          | Type              | Accuracy | Complexity | Key Feature                           |
+|----------------|-----------------|----------|------------|---------------------------------------|
+| MLP            | Fully Connected  | 97%      | Low        | Simple, no convolution                |
+| CNN            | Convolutional    | 98%      | Medium     | Baseline CNN                          |
+| Advanced CNN   | Convolutional    | 99%      | High       | BatchNorm, Dropout, deeper layers    |
+| ResNet18       | Transfer Learning | 99%     | High       | Pretrained features, robust          |
+
+- **MLP:** Quick to train, limited feature extraction.  
+- **CNN:** Learns spatial features, good for image recognition.  
+- **Advanced CNN:** Handles overfitting better, deeper features, highest accuracy.  
+- **ResNet18:** Leverages transfer learning, robust and fast convergence.
+
+---
+
+## 📂 How to Run
+
+1. Train any model:
+
+```bash
+python Train_Code/cnn_model.py
+python Train_Code/mlp_model.py
+python Train_Code/advanced_cnn_model.py
+python Train_Code/resnet_mnist.py
+Evaluate all models:
+
+bash
+Copy code
+python evaluate_all_models_visual.py
+All results, metrics, plots, and sample predictions will be saved in the respective result/ folders.
+
+📚 References
+MNIST dataset: Kaggle MNIST
+
+PyTorch Documentation: https://pytorch.org/docs/stable/index.html
+
+Transfer Learning in PyTorch: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
