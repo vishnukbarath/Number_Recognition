@@ -28,7 +28,8 @@ class MNISTResNetDataset(Dataset):
     def __init__(self, csv_path):
         df = pd.read_csv(csv_path)
         self.labels = df.iloc[:,0].values
-        images = df.iloc[:,1:].values.reshape(-1,28,28)
+        images = df.iloc[:,1:].values.reshape(-1,28,28).astype('uint8') 
+
 
         transform = transforms.Compose([
             transforms.ToPILImage(),
