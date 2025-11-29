@@ -12,11 +12,7 @@ The goal is to evaluate the performance of different architectures and visualize
 - **Accuracy:** ~98%
 - **Strengths:** Simple, fast, baseline CNN.
 
-**Visuals:**
-
-<div style="margin-top: 50px;">
-    ![CNN Training Curve](result/cnn_model/images/training_curve.png)
-</div>
+<img width="1200" height="500" alt="Image" src="https://github.com/user-attachments/assets/d147910b-a23f-4014-b994-dd18e5c72e01" />
 
 <div style="margin-top: 30px;">
     ![CNN Sample Prediction](result/cnn_model/images/sample_prediction.png)
