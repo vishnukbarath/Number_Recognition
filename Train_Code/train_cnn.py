@@ -212,3 +212,12 @@ plt.savefig(os.path.join(OUTPUT_DIR, "sample_prediction.png"))
 plt.show()
 
 print(f"Sample prediction saved at: {OUTPUT_DIR}/sample_prediction.png")
+
+# =====================================================================
+# 11. SAVE TRAINED MODEL
+# =====================================================================
+MODEL_PATH = "result/cnn_model/cnn_model.pth"
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
+torch.save(model.state_dict(), MODEL_PATH)
+
+print(f"Trained CNN model saved at: {MODEL_PATH}")
